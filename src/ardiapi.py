@@ -592,7 +592,7 @@ class AQLQuery:
             else:
                 n = n.fillna(value=np.nan)
                 final = final.join(n,how='outer',lsuffix="",rsuffix="_dup")
-                final = final.groupby(level=0).min()        
+                final = final.groupby(level=0).last()        
 
         #If no history was available, make up a dataframe from the point list data
         if final is None:        
@@ -600,7 +600,7 @@ class AQLQuery:
 
         #Eliminate duplicate indexes
         #print(str(final))
-        final = final.groupby(level=0).min()
+        final = final.groupby(level=0).last()
         
         findex = -1
         for col in final.columns:
