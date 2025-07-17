@@ -63,7 +63,7 @@ class Server:
                 resp = requests.get(url)          
                 if resp.status_code == 200:
                     con = True
-                    if self.webport is None:
+                    if self.webport is None or self.webport == "80":
                         self.webport = "443"
                     self.server = self.server.replace(":80","")
             except:
@@ -121,7 +121,7 @@ class Server:
         
     #Get key configuration data from the ARDI server
     def GetConfiguration(self):        
-        url = self.prefix + self.server + ':' + str(self.port) + '/api/getconfiguration'
+        url = self.prefix + self.server + ':' + str(self.port) + '/s/' + self.site + '/api/getconfiguration'
         resp = requests.get(url)
 
         # HTTP response code, e.g. 200.
@@ -392,6 +392,15 @@ class AQLQuery:
         r.localzone = args.local_zone
         r.serverzone = args.server_zone        
         return r
+    
+    def History(self,query,samples=1000,start=None,end=None,seconds=60*60,mode="interp"):
+        r = AQLHistRequest(query)
+        if start is None:
+            start = datetime.datetime.now() - datetime.timedelta(seconds=seconds)
+            end = datetime.datetime.now()
+        r.SetRange(start,end)
+        r.samples = samples
+        return self.GetHistory(r,md=True)
 
     #Convert a value to a floating point number if possible
     def cvFloat(self,dta):
