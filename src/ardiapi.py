@@ -120,8 +120,8 @@ class Server:
             return False        
         
     #Get key configuration data from the ARDI server
-    def GetConfiguration(self):        
-        url = self.prefix + self.server + ':' + str(self.port) + '/s/' + self.site + '/api/getconfiguration'
+    def GetConfiguration(self):
+        url = self.prefix + self.server + ':' + str(self.webport) + '/s/' + self.site + '/api/getconfiguration'
         resp = requests.get(url)
 
         # HTTP response code, e.g. 200.
@@ -688,6 +688,9 @@ class Subscription:
         self.context = None
         self.closed = False
 
+        self.mcallback = None
+        self.mcontext = None
+
     #Adds a new ARDI point to the subscription
     def AddCode(self,address):
         self.codes.append(address)
@@ -714,6 +717,11 @@ class Subscription:
     def SetCallback(self,call,cont):
         self.callback = call
         self.context = cont
+
+    #Set the callback for OOB messages
+    def SetMessageCallback(self,call,cont):
+        self.mcallback = call
+        self.mcontext = cont
 
     #Internal: Unsubscribe from live data
     def Unsubscribe(self):
@@ -814,6 +822,17 @@ class Subscription:
                                    
                 if self.callback is not None:
                     self.callback(returned,self.context)            
+
+                if self.mcallback is not None:
+                    returned = []                
+                    for itm in js['messages']:
+                        returned.append([itm['code'],itm['value']])
+
+                    try:
+                        self.mcallback(returned,self.mcontext)
+                    except:
+                        pass
+                    
             except (KeyboardInterrupt, SystemExit):
                 self.cancelled = True
                 return False
