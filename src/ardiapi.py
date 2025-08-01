@@ -747,7 +747,7 @@ class Subscription:
     #Handle the long-polling request for live data
     def _call(self,function):
         
-        if (len(self.codes) == 0):
+        if (len(self.codes) and self.mcallback is None):
             time.sleep(1)
             return
 
